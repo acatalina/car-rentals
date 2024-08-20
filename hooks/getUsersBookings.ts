@@ -2,7 +2,7 @@ import prisma from '@/lib/prismadb';
 
 export const getUsersBookings = async (clerkUserId: string) => {
 	try {
-		const user = await prisma.user.findMany({
+		const user = await prisma.user.findFirst({
 			where: {
 				clerkUserId,
 			},
@@ -14,8 +14,7 @@ export const getUsersBookings = async (clerkUserId: string) => {
 
 		const booking = await prisma.bookings.findMany({
 			where: {
-				// @ts-ignore
-				userId: user?.id,
+				userId: user.id,
 			},
 			orderBy: {
 				createdAt: 'desc',
