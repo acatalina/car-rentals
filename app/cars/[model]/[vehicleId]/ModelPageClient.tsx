@@ -161,8 +161,8 @@ const ModelPageClient = ({
 
 							<PopoverContent className='w-auto p-0'>
 								<Calendar
-									mode='range' // @ts-ignore
-									selected={{ from: startDate, to: endDate }}
+									mode='range'
+									selected={{ from: startDate || undefined, to: endDate || undefined }}
 									onSelect={range => {
 										handleDateChange([range?.from || null, range?.to || null]);
 									}}
