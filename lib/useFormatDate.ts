@@ -1,3 +1,13 @@
+export function parseDate(date: Date) {
+	return new Intl.DateTimeFormat('en-GB', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	})
+		.format(date)
+		.replace(/\//g, '-');
+}
+
 export function useFormatDate(dateInput: string | number | Date) {
 	if (!dateInput) return 'N/A';
 
@@ -14,11 +24,5 @@ export function useFormatDate(dateInput: string | number | Date) {
 		return 'Invalid Date';
 	}
 
-	return new Intl.DateTimeFormat('en-GB', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-	})
-		.format(date)
-		.replace(/\//g, '-');
+	return parseDate(date);
 }
