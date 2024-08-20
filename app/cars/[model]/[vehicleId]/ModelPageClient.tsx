@@ -23,23 +23,11 @@ interface ModelPageClientProps {
 	bookedDateRanges: { startDate: string; endDate: string }[] | [];
 }
 
-const ModelPageClient = ({
-	model,
-	clerkUserId,
-	bookedDateRanges,
-}: ModelPageClientProps) => {
-	const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-		null,
-		null,
-	]);
-	const [startDate, endDate] = dateRange;
-	const router = useRouter();
+type DateRange = [Date | null, Date | null];
 
-	const handleDateChange = (update: [Date | null, Date | null]) => {
-		setDateRange(update);
-	};
-
-	const formatDateRange = () => {
+function formatDateRange(dates: DateRange) {
+	const [startDate, endDate] = dates;
+	
 		if (startDate && endDate) {
 			return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
 		} else if (startDate) {
@@ -47,6 +35,52 @@ const ModelPageClient = ({
 		} else {
 			return 'Check Availability';
 		}
+	
+}
+
+function calculateTotalPrice(dates: DateRange, car: typeof carsForRent[0] | undefined): number {
+	const [startDate, endDate] = dates;
+
+	if (startDate && endDate && car) {
+		const totalDays = Math.ceil(
+			(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
+		);
+		const price = useFormatPrice(totalDays * car.price);
+		
+		return +price;
+	}
+
+	return 0;
+};
+
+function calculateNumberOfDays(dates: DateRange): number {
+	const [startDate, endDate] = dates;
+
+	if (startDate && endDate) {
+		const totalDays = Math.ceil(
+			(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
+		);
+		
+		return totalDays;
+	}
+
+	return 0;
+};
+
+const ModelPageClient = ({
+	model,
+	clerkUserId,
+	bookedDateRanges,
+}: ModelPageClientProps) => {
+	const [dateRange, setDateRange] = useState<DateRange>([
+		null,
+		null,
+	]);
+	const [startDate, endDate] = dateRange;
+	const router = useRouter();
+
+	const handleDateChange = (update: DateRange) => {
+		setDateRange(update);
 	};
 
 	const car = carsForRent.find(
@@ -57,26 +91,9 @@ const ModelPageClient = ({
 			model
 	);
 
-	const calculateTotalPrice = () => {
-		if (startDate && endDate && car) {
-			const totalDays = Math.ceil(
-				(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
-			);
-			const price = useFormatPrice(totalDays * car.price);
-			return `- ${price} `;
-		}
-	};
-
-	const calculateNumberOfDays = () => {
-		if (startDate && endDate) {
-			const totalDays = Math.ceil(
-				(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
-			);
-			return `for ${totalDays} days`;
-		}
-
-		return null;
-	};
+	const formattedDateRange = formatDateRange(dateRange);
+	const totalPrice = calculateTotalPrice(dateRange, car);
+	const numberOfDays = calculateNumberOfDays(dateRange);
 
 	const functionMatcher: Matcher = (date: Date) => {
 		const today = new Date();
@@ -156,7 +173,7 @@ const ModelPageClient = ({
 					<div className='mb-6 flex w-full justify-center'>
 						<Popover>
 							<PopoverTrigger>
-								<span className='w-full truncate'>{formatDateRange()}</span>
+								<span className='w-full truncate'>{formattedDateRange}</span>
 							</PopoverTrigger>
 
 							<PopoverContent className='w-auto p-0'>
@@ -185,8 +202,8 @@ const ModelPageClient = ({
 							className='mt-6'
 						>
 							<Button className='w-full'>
-								Rent Vehicle {calculateTotalPrice()}
-								{calculateNumberOfDays()}
+								Rent Vehicle - {totalPrice}
+								for {numberOfDays} days
 							</Button>
 						</Link>
 					)}
@@ -194,8 +211,8 @@ const ModelPageClient = ({
 					{!clerkUserId && (
 						<SignInButton>
 							<Button className='w-full'>
-								Rent Vehicle {calculateTotalPrice()}
-								{calculateNumberOfDays()}
+								Rent Vehicle - {totalPrice}
+								for {numberOfDays} days
 							</Button>
 						</SignInButton>
 					)}
