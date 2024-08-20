@@ -14,12 +14,10 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { SignInButton } from '@clerk/nextjs';
 import { Matcher } from 'react-day-picker';
 
-interface ModelPageClientProps {
-	model: string;
-	clerkUserId: string | '';
+interface CarProps {
+	car: typeof carsForRent[0];
 	bookedDateRanges: { startDate: string; endDate: string }[] | [];
 }
 
@@ -38,10 +36,10 @@ function formatDateRange(dates: DateRange) {
 	
 }
 
-function calculateTotalPrice(dates: DateRange, car: typeof carsForRent[0] | undefined): number {
+function calculateTotalPrice(dates: DateRange, car: typeof carsForRent[0]): number {
 	const [startDate, endDate] = dates;
 
-	if (startDate && endDate && car) {
+	if (startDate && endDate) {
 		const totalDays = Math.ceil(
 			(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
 		);
@@ -67,11 +65,10 @@ function calculateNumberOfDays(dates: DateRange): number {
 	return 0;
 };
 
-const ModelPageClient = ({
-	model,
-	clerkUserId,
+const Car = ({
+	car,
 	bookedDateRanges,
-}: ModelPageClientProps) => {
+}: CarProps) => {
 	const [dateRange, setDateRange] = useState<DateRange>([
 		null,
 		null,
@@ -82,14 +79,6 @@ const ModelPageClient = ({
 	const handleDateChange = (update: DateRange) => {
 		setDateRange(update);
 	};
-
-	const car = carsForRent.find(
-		car =>
-			car.make.toLowerCase() +
-				'-' +
-				car.model.toLowerCase().replaceAll(' ', '-') ===
-			model
-	);
 
 	const formattedDateRange = formatDateRange(dateRange);
 	const totalPrice = calculateTotalPrice(dateRange, car);
@@ -126,45 +115,45 @@ const ModelPageClient = ({
 				)}
 				<div className='w-full flex items-center justify-center'>
 					<h1 className='text-xl sm:text-2xl'>
-						{car?.make} {car?.model}
+						{car.make} {car.model}
 					</h1>
 					<div className='flex truncate ml-10'>
-						<StarRating rating={car?.rating} />
-						<p className='ml-2 pt-1 font-semibold'>{car?.rating}</p>
+						<StarRating rating={car.rating} />
+						<p className='ml-2 pt-1 font-semibold'>{car.rating}</p>
 					</div>
 				</div>
 				<div className='grid grid-cols-2 h-full w-full sm:w-4/5 space-y-1 mt-4 truncate gap-x-2'>
 					<p className='text-left font-semibold'>
 						Price<span className='text-red-500 font-bold'>:</span>{' '}
 						<span className='text-secondary-foreground'>
-							{useFormatPrice(Number(car?.price))} / Day
+							{useFormatPrice(Number(car.price))} / Day
 						</span>
 					</p>
 					<p className='text-right font-semibold'>
 						Doors<span className='text-red-500 font-bold'>:</span>{' '}
-						<span className='text-secondary-foreground'>{car?.doors}</span>
+						<span className='text-secondary-foreground'>{car.doors}</span>
 					</p>
 					<p className='text-left font-semibold'>
 						Transmission
 						<span className='text-red-500 font-bold'>:</span>{' '}
 						<span className='text-secondary-foreground'>
-							{car?.transmission}
+							{car.transmission}
 						</span>
 					</p>
 					<p className='text-right font-semibold'>
 						Fuel Type
 						<span className='text-red-500 font-bold'>:</span>{' '}
-						<span className='text-secondary-foreground'>{car?.fuelType}</span>
+						<span className='text-secondary-foreground'>{car.fuelType}</span>
 					</p>
 					<p className='text-left font-semibold'>
 						Power
 						<span className='text-red-500 font-bold'>:</span>{' '}
-						<span className='text-secondary-foreground'>{car?.power}</span>
+						<span className='text-secondary-foreground'>{car.power}</span>
 					</p>
 					<p className='text-right font-semibold'>
 						MPG
 						<span className='text-red-500 font-bold'>:</span>{' '}
-						<span className='text-secondary-foreground'>{car?.mpg}</span>
+						<span className='text-secondary-foreground'>{car.mpg}</span>
 					</p>
 				</div>
 			</div>
@@ -189,12 +178,12 @@ const ModelPageClient = ({
 							</PopoverContent>
 						</Popover>
 					</div>
-					{startDate && endDate && clerkUserId && (
+					{startDate && endDate && (
 						<Link
 							href={{
 								pathname: '/checkout',
 								query: {
-									vehicleId: car?.vehicleId!.toString(),
+									vehicleId: car.vehicleId.toString(),
 									startDate: `${startDate.toISOString()}`,
 									endDate: `${endDate.toISOString()}`,
 								},
@@ -207,19 +196,10 @@ const ModelPageClient = ({
 							</Button>
 						</Link>
 					)}
-
-					{!clerkUserId && (
-						<SignInButton>
-							<Button className='w-full'>
-								Rent Vehicle - {totalPrice}
-								for {numberOfDays} days
-							</Button>
-						</SignInButton>
-					)}
 				</div>
 			</div>
 		</main>
 	);
 };
 
-export default ModelPageClient;
+export default Car;

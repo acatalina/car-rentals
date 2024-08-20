@@ -1,16 +1,16 @@
-import ModelPageClient from './ModelPageClient';
-import { auth } from '@clerk/nextjs/server';
+import Car from './Car';
 import { getBookings } from '@/hooks/getBookings';
+import { carsForRent } from '../../../../data';
 
 const ModelPage = async ({
 	params,
 }: {
-	params: { model: string; vehicleId: string };
+	params: { vehicleId: string };
 }) => {
-	const { userId: clerkUserId } = auth();
-	const model = params.model;
 	const vehicleId = params.vehicleId;
-	const bookings = await getBookings();
+
+	// TODO: get the bookings for the vehicleId. Date ranges?
+	const bookings = await getBookings(vehicleId);
 	const getBookedDateRanges = () => {
 		const vehicleBookings = bookings.filter(
 			booking => booking.vehicleId === Number(vehicleId)
@@ -28,10 +28,12 @@ const ModelPage = async ({
 
 	const bookedDateRanges = getBookedDateRanges();
 
+	// TODO: actually get the car from the vehicleId. What do we do if the car is not found?
+	const car = carsForRent[0];
+
 	return (
-		<ModelPageClient
-			model={model}
-			clerkUserId={clerkUserId || ''}
+		<Car
+			car={car}
 			bookedDateRanges={bookedDateRanges || []}
 		/>
 	);
